@@ -65,7 +65,7 @@
 ### 담당 기능
 #### 📺 시연 영상 (이미지 클릭시 유튜브로 이동됩니다.)
 
-[![Watch the video](https://img.youtube.com/vi/nXx9EeZ0TFE/hqdefault.jpg)](https://www.youtube.com/watch?v=nXx9EeZ0TFE&t=8s)
+[![Watch the video](https://github.com/user-attachments/assets/3f173be9-4ed1-431f-948b-c23a41413926)](https://youtu.be/i2rlSeZK0rM)
 
 1. 예약 및 결제 CRUD 설계 및 기능 구현
 2. 추천받은 경로, 다른 사용자의 경로대로 일괄 예약 기능 구현
