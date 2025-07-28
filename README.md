@@ -83,53 +83,46 @@
 
 ### 트러블 슈팅
 <details>
-  <summary><strong>1. 예약 날짜 일괄 비활성화 오류</strong></summary>
-  • <strong>문제 상황</strong>: 단일 장소에서 예약한 날짜가 전체 예약 건에 일괄 적용, 모든 장소의 동일한 날짜가 예약 불가능 처리
+  <summary><strong>1. NFT 이미지가 관리자 및 마이페이지에서 표시되지 않는 문제</strong></summary>
+  • <strong>문제 상황</strong>: 관리자 페이지와 사용자 마이페이지에서 NFT 이미지가 정상적으로 로드되지 않고 빈 화면 또는 오류 발생
   <br/>
-  • <strong>원인 분석</strong>: 장소(place_id) 조건 없이 날짜만을 기준으로 비활성화, 모든 장소에 동일한 날짜 비활성화 적용
+  • <strong>원인 분석</strong>: 서버 저장 이미지 URL과 외부 저장소 경로 불일치로 이미지 접근 실패
   <br/>
-  • <strong>해결 방법</strong>: 예약 비활성화 로직에서 장소 식별자(place_id) 조건 포함<br/> → JOIN 구문을 통해 장소별 예약 날짜 필터링<br/> → 장소별로 독립된 비활성화 날짜 처리 가능
-
+  • <strong>해결 방법</strong>: <br/>
+    • 이미지 URL 유효성 검증 로직 추가로 잘못된 주소 사전 탐지 <br/>
+    • 정적 파일 경로 및 외부 IPFS 주소 관리 체계 개선으로 일관성 유지 <br/>
+    • 이미지 캐시 정책과 CORS 설정 점검하여 원활한 로드 보장 <br/>
+ • <strong>효과</strong>: 외부 저장소 연동 시 주소 관리와 접근성 중요성 체감, 이미지 자원 관리가 사용자 경험에 직접 영향
 </details>
+
 <details>
-  <summary><strong>2. 결제 시 예약 정보 누락</strong></summary>
-  • <strong>문제 상황</strong>: 결제 진행 시, 예약 정보(장소명, 가격 등)가 화면에 미출력 혹은 null 값으로 표시되는 문제 발생
+  <summary><strong>2. 외래키 제약조건으로 인한 삭제 오류 및 데이터 무결성 문제</strong></summary>
+  • <strong>문제 상황</strong>: NFT 데이터 물리적 삭제 시 외래키 제약조건 위반으로 연관 데이터가 남아 삭제 실패 및 서버 에러 발생
   <br/>
-  • <strong>원인 분석</strong>: 결제 매퍼에서 예약id만 조회하고, 이에 따른 예약 상세 정보를 Join하여 가져오지 않아 필요한 정보가 누락
+  • <strong>원인 분석</strong>: 연관 엔티티 미삭제 또는 DB에 CASCADE 옵션 미설정으로 인한 문제
   <br/>
-  • <strong>해결 방법</strong>: 결제 매퍼에 예약 테이블과의 JOIN 구문을 추가<br/> → 예약 ID 뿐만 아니라 관련된 예약 상세 정보(장소, 시간, 금액 등)를 함께 조회하도록 수정
-
+  • <strong>해결 방법</strong>: <br/>
+    • deletedAt 타임스탬프 필드 활용하는 소프트 딜리트 방식 적용 <br/>
+    • 연관 엔티티에도 모두 소프트 딜리트 적용하여 참조 무결성 유지 <br/>
+    • 조회 시 삭제 플래그 설정된 데이터 필터링해 사용자 노출 차단 <br/> 
+    • 필요 시 복구 기능 지원으로 데이터 안정성 및 운영 편의성 강화 <br/>
+ • <strong>효과</strong>: 소프트 딜리트는 외래 키 제약 문제 회피와 데이터 무결성 보장에 효과적이며, 운영 안정성을 크게 개선
 </details>
+
 <details>
-  <summary><strong>3. 결제 취소 및 환불 시 예약 상태 미반영</strong></summary>
-  • <strong>문제 상황</strong>: 결제 취소 또는 환불을 진행해도 해당 예약 상태가 여전히 "예약 중"으로 유지되는 문제 발생
+  <summary><strong>3. 사용 후 UI가 새로고침해야만 상태 변경 반영 문</strong></summary>
+  • <strong>문제 상황</strong>: NFT 쿠폰 사용 후 화면이 즉시 업데이트되지 않고 새로 고침 필요
   <br/>
-  • <strong>원인 분석</strong>: 결제 및 예약 상태 간 연결 관계 미설정<br/> → 결제 취소 처리 시 예약 상태 업데이트 실패
+  • <strong>원인 분석</strong>: React 상태 관리에서 변경된 상태 값 즉시 갱신 안 되어 리렌더링 발생하지 않음
   <br/>
-  • <strong>해결 방법</strong>: 예약 상태와 결제 상태를 Enum 타입으로 정의<br/> → 예약 상태가 취소일 경우에만 결제 취소 또는 환불을 가능하게 하는 로직 구성<br/> → 결제 상태 변경과 예약 상태 변경을 동기화
+  • <strong>해결 방법</strong>: <br/>
+   • useEffect 훅으로 상태 변화 감지 및 리렌더링 로직 추가 <br/>
+ • 상태 변경 함수 호출 후 데이터 재 요청 또는 로컬 상태 동기화 수행 <br/>
+ • <strong>효과</strong>: 사용자 경험은 실시간 피드백과 반응성에 크게 의존, 상태 관리와 렌더링 최적화가 매우 중요
 
 </details>
-<details>
-  <summary><strong>4. 일괄 예약 시 경로 정보 미조회</strong></summary>
-  • <strong>문제 상황</strong>: 여러 장소를 포함하는 일괄 예약 시, 경로 정보 조회 실패<br/> → 예약 데이터가 null로 저장되는 오류 발생
-  <br/>
-  • <strong>원인 분석</strong>: 초기 테스트에서는 더미 데이터를 기반으로 경로 ID만 연결하여 기능 확인<br/> → 실제 경로 정보 테이블과의 관계 설정이 누락
-  <br/>
-  • <strong>해결 방법</strong>: 예약 테이블이 경로 정보 테이블과 관계를 맺도록 수정<br/> → JOIN 구문을 통해 일괄 예약 시 각 경로의 정보를 조회할 수 있도록 개선
-
-</details>
-<details>
-  <summary><strong>5. 일괄결제 취소, 환불 오류</strong></summary>
-  • <strong>문제 상황</strong>: 일괄 결제의 취소 또는 환불 요청 미처리
-  <br/>
-  • <strong>원인 분석</strong>: 일괄 결제는 여러 예약을 경로 ID 기준으로 묶어 총 금액을 계산하는 구조<br/> → 결제 테이블에 예약 ID 저장 불가<br/> → 환불 처리 시 참조할 예약 정보가 미존재
-  <br/>
-  • <strong>해결 방법</strong>: 결제 테이블 중심이 아닌, 각 예약이 결제 ID를 참조하도록 구조 개선<br/> → 환불 로직에서는 동일 결제id를 가지는 예약들을 묶어 처리하도록 변경<br/> → 일괄 결제에 대한 환불도 정상 작동하게 개선
-
-</details>
-
 <hr/>
 
 ### 느낀 점
 
-![느낀점](https://github.com/user-attachments/assets/b69e5bc8-eeae-4727-a1e0-213f5c335e50)
+![느낀점](https://github.com/user-attachments/assets/e09473dd-3fb6-4943-8ade-786b2789b101)
