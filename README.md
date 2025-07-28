@@ -110,14 +110,14 @@
 </details>
 
 <details>
-  <summary><strong>3. 사용 후 UI가 새로고침해야만 상태 변경 반영 문</strong></summary>
+  <summary><strong>3. 사용 후 UI가 새로고침해야만 상태 변경 반영 문제</strong></summary>
   • <strong>문제 상황</strong>: NFT 쿠폰 사용 후 화면이 즉시 업데이트되지 않고 새로 고침 필요
   <br/>
   • <strong>원인 분석</strong>: React 상태 관리에서 변경된 상태 값 즉시 갱신 안 되어 리렌더링 발생하지 않음
   <br/>
   • <strong>해결 방법</strong>: <br/>
    • useEffect 훅으로 상태 변화 감지 및 리렌더링 로직 추가 <br/>
- • 상태 변경 함수 호출 후 데이터 재 요청 또는 로컬 상태 동기화 수행 <br/>
+   • 상태 변경 함수 호출 후 데이터 재 요청 또는 로컬 상태 동기화 수행 <br/>
  • <strong>효과</strong>: 사용자 경험은 실시간 피드백과 반응성에 크게 의존, 상태 관리와 렌더링 최적화가 매우 중요
 
 </details>
